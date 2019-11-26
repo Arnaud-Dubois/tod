@@ -1,10 +1,10 @@
-.App {
-  text-align: center;
+body {
+  background-color: #f7f7f7;
 }
 
-.App-logo {
-  height: 40vmin;
-}
+.App { text-align: center; }
+
+.App-logo { height: 40vmin; }
 
 .App-header {
   background-color: #282c34;
@@ -19,4 +19,25 @@
 
 .App-link {
   color: #09d3ac;
+}
+
+
+.fade {
+  animation: fade 0.3s forwards ease-out;
+}
+
+@keyframes fade {
+  to {
+    transform: translateX(100px);
+    opacity: 0;
+  }
+}
+
+/* pop effect */
+.pop {
+  transition: box-shadow 225ms ease-in-out;
+}
+
+.pop:hover {
+  box-shadow: 0 20px 30px 0 rgba(36,50,66,.14)
 }
