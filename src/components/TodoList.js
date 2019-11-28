@@ -1,5 +1,6 @@
 import React, { Component } from 'react'
 import Card from './Card'
+import Day from './Day'
 import DatePicker from 'react-date-picker';
 import update from 'immutability-helper'
 
@@ -9,17 +10,26 @@ export default class TodoList extends Component {
     date: new Date(),
     error: false,
     todos: [
-      {id:0, date: new Date(), text:'Say Hello to the World'},
-      {id:1, date: new Date(), text:'Water the plants'},
-      {id:2, date: new Date(), text:'Go for a walk'},
-      {id:3, date: new Date(), text:'Learn something new'},
+      {id:0, date: new Date(), checked: false, text:'Say Hello to the World'},
+      {id:1, date: new Date(), checked: true, text:'Water the plants'},
+      {id:2, date: new Date(), checked: false, text:'Go for a walk'},
+      {id:3, date: new Date(), checked: true, text:'Learn something new'},
     ]
   }
+
 
   onPickDate = date => this.setState({ date })
 
   handleChange = (e) => {
     this.setState({task:e.target.value})
+  }
+
+  handleCheck = (e, id) => {
+    const { todos } = this.state
+    const newTodo = [...todos]
+    newTodo[id].checked = !newTodo[id].checked
+    
+    this.setState({todos: newTodo})
   }
 
   handleEdit = (e, id) => {
@@ -37,10 +47,13 @@ export default class TodoList extends Component {
     if(task === '') {
       this.setState({error: true})
     } else {
-      newArr.push({ id:newArr.length, text:task, date })
+      if(date === null) {
+        newArr.push({ id:newArr.length, text:task, date: new Date() })
+      } else {
+        newArr.push({ id:newArr.length, text:task, date })  
+      }
       this.setState({ todos: newArr, error: false, task: '' })
     }
-
   }
 
   handleDelete = (id, ref) => {
@@ -60,62 +73,81 @@ export default class TodoList extends Component {
     const newArr = update(this.state.todos, {$splice: [[dragIndex, 1], [hoverIndex, 0, dragCard]],})
     this.setState({todos: newArr})
   }
-  
 
   render() {
     const { task, date, error, todos } = this.state
     return (
-      <>
-      <div className="columns">
-        <div className="column">
-          <div className="field">
-              <label className="label">Describe your next task</label>
-              <div className="control">
-                  <input className={`input ${ error ? 'is-danger' : ''}`} onChange={(e) => this.handleChange(e)} type="text" placeholder="Do the chores" value={task} />
+      <div className="todolist">
+      <Day/>
+
+      <h3 className="title is-3 has-text-black has-text-centered">You have {todos.length} task{todos.length === 1 ? '' : 's'} remaining</h3>
+      
+      <div className="card">
+        <div className="card-content">
+          <div className="level">
+            <div className="level-left">
+
+              <div className="level-item">
+                <div className="filed">
+                  <div className="control">
+                      <button onClick={this.addItem} className="button is-info is-rounded">
+                          <i className="fas fa-plus"/><span style={{marginLeft: '0.5rem'}}> Add new task</span>
+                      </button>
+                  </div>
+                </div>
               </div>
-              { error && <p className="help is-danger" >Please enter a task to do</p> }
-          </div>
-          <div className="control">
-            <button onClick={this.addItem} className="button is-primary">
-              <span style={{marginRight: '0.5rem'}}>
-                <i className="fas fa-plus"/>
-              </span>
-              Add task
-            </button>
+
+              <div className="level-item">
+                  <div className="field">
+                    <div className="control">
+                      <label className="label">Describe your next task</label>
+                          <input
+                            className={`input ${ error ? 'is-danger' : ''}`} onChange={(e) => this.handleChange(e)}
+                            type="text"
+                            placeholder="Do the job"
+                            value={task}
+                          />
+                        </div>
+                      { error && <p className="help is-danger" >Please enter a task to do</p> }
+                </div>
+              </div>
+
+              <div className="level-item">
+                <div className="field">
+                  <div className="control">
+                  <label className="label">Due date</label>
+                    <DatePicker
+                      className="input"
+                      onChange={this.onPickDate}
+                      minDate={new Date()}
+                      value={date}
+                    />
+                  </div>
+                </div>
+              </div>
+
+            </div>
+            </div>
           </div>
         </div>
-        <div className="column">
-          <div className="field">
-              <label className="label">Due date</label>
-              <DatePicker
-                onChange={this.onPickDate}
-                value={date}
-              />
-          </div>
-        </div>
-      </div>
         
-        <h3 className="title is-3">All the things I still need to do</h3>
+        <hr></hr>
         { todos.map((item, index) =>
             <Card
               key={item.id}
               index={index}
               id={item.id}
+              checked={item.checked}
               date={item.date}
               text={item.text}
               moveCard={this.moveCard}
+              onChecked={this.handleCheck}
               onEdit={this.handleEdit}
               onDelete={this.handleDelete}
             />
-            /* <div key={index} className="list is-hoverable">
-                <span className="list-item">
-                    <input className="input" onChange={(e) => this.handleEdit(e, item.id)} type="text" value={item.title} />
-                    <button onClick={() => this.delete(item.id)}>Delete</button>
-                </span>
-            </div> */
         )}
-        <div>{todos.length} task{todos.length === 1 ? '' : 's'} remaining</div>
-      </>
+        
+      </div>
     )
   }
 }

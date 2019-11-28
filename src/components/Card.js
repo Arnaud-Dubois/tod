@@ -8,50 +8,83 @@ const Card = React.forwardRef(
         index,
         date,
         id,
+        checked,
         isDragging,
         connectDragSource,
         connectDropTarget,
+        onChecked,
         onEdit,
         onDelete
     }, ref) => {
         const elementRef = useRef(null)
         connectDragSource(elementRef)
         connectDropTarget(elementRef)
-        const opacity = isDragging ? 0 : 1
+        const opacity = isDragging ? 0.5 : 1
         useImperativeHandle(ref, () => ({
             getNode: () => elementRef.current,
         }))
+        
+        // Days remainings
+        const today = Math.ceil((Math.floor(Date.now() / 1000) / 86400))
+        const dueDate = Math.ceil((Math.floor(date / 1000) / 86400))
+        const daysRemaining = dueDate - today
+
         return (
-            <div key={index} ref={elementRef} style={{opacity}} className="list is-hoverable pop">
+            <div key={index} ref={elementRef} style={{opacity}} className="list is-hoverable is-relative pop">
                 <div>
-                    <span className="tag is-warning">{index + 1}</span> -
-                    <span className={`tag ${new Date().toLocaleDateString() === date.toLocaleDateString() ? 'is-danger' : 'is-info'}`}>
-                        {date.toLocaleDateString()}
+                    <span
+                        
+                        className="tag is-warning"
+                    >
+                        {index + 1}
                     </span>
                 </div>
                 <span className="list-item">
-                    <div className="level">
-                        <div className="field">
-                            <div className="control has-icons-right">
-                                <input
-                                    className="input"
-                                    onChange={(e) => onEdit(e, index)}
-                                    type="text"
-                                    value={text}
-                                />
-                                <span className="icon is-small is-right">
-                                    <i className="fas fa-pen"></i>
-                                </span>
-                            </div>
+                    <button
+                        style={{ position:'absolute', top:'0.5rem', right:'0.5rem' }}
+                        className="delete is-small has-background-danger"
+                        onClick={() => onDelete(index, elementRef)}
+                    />
+                    <div>
+                        <div className="columns">
+                                <div className="field column is-1">
+                                    <div className="control">
+                                        <label className="checkbox checkbox-label">
+                                            <input
+                                                type="checkbox"
+                                                onChange={(e) => onChecked(e, index)}
+                                                checked={checked}
+                                            />
+                                            <span className="checkbox-custom"></span>
+                                        </label>
+                                    </div>
+                                </div>
+                                <div className="field column">
+                                    <div className="control has-icons-right">
+                                        <input
+                                            className={`input title is-4 is-marginless has-border-bottom ${checked ? 'is-checked' : ''}`}
+                                            onChange={(e) => onEdit(e, index)}
+                                            type="text"
+                                            value={text}
+                                        />
+                                        <span className="icon is-small is-right">
+                                            <i className="fas fa-pen"></i>
+                                        </span>
+                                    </div>
+                                    
+                                    <div className="box">
+                                        <div className={`${checked ? 'is-checked' : 'has-text-grey'}`}>
+                                            <i class="far fa-calendar"/> {date.toLocaleDateString()}
+                                        </div>
+                                        <div
+                                            style={{background:`${checked ? 'lightgrey' : ''}`}}
+                                            className={`tag ${new Date().toLocaleDateString() === date.toLocaleDateString() ? 'is-danger' : 'is-info'}`}
+                                        >
+                                            {daysRemaining} days remaining
+                                        </div>
+                                    </div>
+                                </div>
                         </div>
-                    </div>
-                    <div className="level is-pulled-right">
-                        <button className="button is-danger" onClick={() => onDelete(index, elementRef)}>
-                            <span style={{marginRight: '0.5rem'}}>
-                                <i className="fas fa-trash"/>
-                            </span>
-                            Delete
-                        </button>
                     </div>
                     <div className="is-clearfix"/>
                 </span>
